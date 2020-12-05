@@ -1,6 +1,7 @@
 package com.zhenz.divvydose.challenge.service;
 
 import com.zhenz.divvydose.challenge.client.RestClient;
+import com.zhenz.divvydose.challenge.domain.RepositorySummary;
 import com.zhenz.divvydose.challenge.domain.github.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,7 +21,12 @@ public class GitHubService {
 		this.restClient = restClient;
 	}
 
-	public List<Repository> getRepositoryInfo(final String name) {
+	public RepositorySummary getRepositorySummary(final String name) {
+		List<Repository> gitHubRepositories = getRepositoryInfo(name);
+		return new RepositorySummary(gitHubRepositories);
+	}
+
+	private List<Repository> getRepositoryInfo(final String name) {
 		final UriComponents uriComponents = UriComponentsBuilder.newInstance()
 				.scheme("https")
 				.host("api.github.com")
