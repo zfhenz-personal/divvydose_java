@@ -1,7 +1,9 @@
 package com.zhenz.divvydose.challenge.controller;
 
-import com.zhenz.divvydose.challenge.domain.GitHubRepository;
+import com.zhenz.divvydose.challenge.domain.github.Repository;
 import com.zhenz.divvydose.challenge.domain.RepositorySummary;
+import com.zhenz.divvydose.challenge.domain.bitbucket.RepositoryPage;
+import com.zhenz.divvydose.challenge.service.BitBucketService;
 import com.zhenz.divvydose.challenge.service.GitHubService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +18,13 @@ import java.util.List;
 @RequestMapping("repository")
 public class RepositoryController {
 
-	private GitHubService gitHubService;
+	private final GitHubService gitHubService;
+	private final BitBucketService bitBucketService;
 
-	public RepositoryController(final GitHubService gitHubService) {
+	public RepositoryController(final GitHubService gitHubService,
+								final BitBucketService bitBucketService) {
 		this.gitHubService = gitHubService;
+		this.bitBucketService = bitBucketService;
 	}
 
 	@GetMapping()
@@ -29,9 +34,10 @@ public class RepositoryController {
 
 	@GetMapping("/info/{name}")
 	public RepositorySummary getRepositoryInfo(@PathVariable String name) {
-		List<GitHubRepository> gitHubRepository = gitHubService.getRepositoryInfo(name);
+		List<Repository> gitHubRepositories = gitHubService.getRepositoryInfo(name);
+		RepositoryPage bitBucketRepositoryPage = bitBucketService.getRepositoryInfo(name);
 
-		RepositorySummary summary = new RepositorySummary(gitHubRepository);
+		RepositorySummary summary = new RepositorySummary(gitHubRepositories, bitBucketRepositoryPage);
 
 
 		return summary;

@@ -1,30 +1,26 @@
 package com.zhenz.divvydose.challenge.service;
 
 import com.zhenz.divvydose.challenge.client.RestClient;
-import com.zhenz.divvydose.challenge.domain.github.Repository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zhenz.divvydose.challenge.domain.bitbucket.RepositoryPage;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-
 @Service
-public class GitHubService {
+public class BitBucketService {
 
 	private final RestClient restClient;
 
-	@Autowired
-	public GitHubService(final RestClient restClient) {
+	public BitBucketService(final RestClient restClient) {
 		this.restClient = restClient;
 	}
 
-	public List<Repository> getRepositoryInfo(final String name) {
+	public RepositoryPage getRepositoryInfo(final String name) {
 		final UriComponents uriComponents = UriComponentsBuilder.newInstance()
 				.scheme("https")
-				.host("api.github.com")
-				.path("/orgs/{name}/repos")
+				.host("api.bitbucket.org")
+				.path("/2.0/repositories/{name}")
 				.buildAndExpand(name);
 
 		return restClient.get(uriComponents.toUriString(), new ParameterizedTypeReference<>() {});
