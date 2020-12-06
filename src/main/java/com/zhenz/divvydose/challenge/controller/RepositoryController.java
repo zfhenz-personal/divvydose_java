@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 @Slf4j
 @RestController
 @RequestMapping("repository")
@@ -24,7 +26,7 @@ public class RepositoryController {
 	}
 
 	@GetMapping("/overview/{name}")
-	public RepositorySummary getRepositoryInfo(@PathVariable String name) {
+	public RepositorySummary getRepositoryInfo(@PathVariable String name) throws InterruptedException, ExecutionException {
 		RepositorySummary gitHubSummary = gitHubService.getRepositorySummary(name);
 		RepositorySummary bitbucketSummary = bitBucketService.getRepositorySummary(name);
 

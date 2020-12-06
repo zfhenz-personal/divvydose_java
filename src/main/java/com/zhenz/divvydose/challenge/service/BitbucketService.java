@@ -4,14 +4,19 @@ import com.zhenz.divvydose.challenge.client.RestClient;
 import com.zhenz.divvydose.challenge.domain.RepositorySummary;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Page;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Repository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
+@Slf4j
 public class BitbucketService {
 
 	private final RestClient restClient;
@@ -20,7 +25,7 @@ public class BitbucketService {
 		this.restClient = restClient;
 	}
 
-	public RepositorySummary getRepositorySummary(final String name) {
+	public RepositorySummary getRepositorySummary(final String name) throws InterruptedException, ExecutionException {
 		int page = 1;
 		Page<Repository> repositoryPage = getRepositoryPage(name, page);
 		RepositorySummary repositorySummary = new RepositorySummary(repositoryPage);
@@ -34,13 +39,21 @@ public class BitbucketService {
 			allRepositories.addAll(repositoryPage.getValues());
 		}
 
-		for (Repository repository : allRepositories) {
-			Page<?> watchers = restClient.get(repository.getLinks().getWatchers().getHref(), new ParameterizedTypeReference<>() {});
-			repositorySummary.setWatcherCount(repositorySummary.getWatcherCount() + watchers.getSize());
+		List<CompletableFuture<Page<Object>>> allWatcherPages = new ArrayList<>();
+		List<CompletableFuture<Page<Object>>> allForkPages = new ArrayList<>();
 
-			Page<?> forks = restClient.get(repository.getLinks().getForks().getHref(), new ParameterizedTypeReference<>() {});
-			repositorySummary.setForkRepoCount(repositorySummary.getWatcherCount() + forks.getSize());
+		for (Repository repository : allRepositories) {
+			// diamond expression intentionally unused to avoid bug in jdk11
+			// https://bugs.openjdk.java.net/browse/JDK-8220578
+			allWatcherPages.add(restClient.getAsync(repository.getLinks().getWatchers().getHref(),
+					new ParameterizedTypeReference<Page<Object>>() {}));
+
+			allForkPages.add(restClient.getAsync(repository.getLinks().getForks().getHref(),
+					new ParameterizedTypeReference<Page<Object>>() {}));
 		}
+
+		updateWatcherCount(repositorySummary, allWatcherPages);
+		updateForkCount(repositorySummary, allForkPages);
 
 		return repositorySummary;
 	}
@@ -54,5 +67,23 @@ public class BitbucketService {
 				.buildAndExpand(name);
 
 		return restClient.get(uriComponents.toUriString(), new ParameterizedTypeReference<>() {});
+	}
+
+	private void updateWatcherCount(final RepositorySummary repositorySummary,
+									final List<CompletableFuture<Page<Object>>> watcherPages) throws InterruptedException, ExecutionException {
+		CompletableFuture.allOf(watcherPages.toArray(new CompletableFuture[0])).join();
+
+		for (CompletableFuture<Page<Object>> watcherPage : watcherPages) {
+			repositorySummary.setWatcherCount(repositorySummary.getWatcherCount() + watcherPage.get().getSize());
+		}
+	}
+
+	private void updateForkCount(final RepositorySummary repositorySummary,
+								 final List<CompletableFuture<Page<Object>>> forkPages) throws InterruptedException, ExecutionException {
+		CompletableFuture.allOf(forkPages.toArray(new CompletableFuture[0])).join();
+
+		for (CompletableFuture<Page<Object>> forkPage : forkPages) {
+			repositorySummary.setForkRepoCount(repositorySummary.getForkRepoCount() + forkPage.get().getSize());
+		}
 	}
 }

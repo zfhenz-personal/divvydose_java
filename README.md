@@ -39,6 +39,10 @@ path for retrieving repository summary for the given name. I chose to use a path
 endpoint and the word 'overview' since the response object is a summation of information across an organization's
 repositories.
 
+3. How efficient is your code?
+Explained in detail in the `Performance` section below, but I believe that this application is nearly as performant as
+possible given the API's being consumed. One future improvement could be to parallelize the calls to github and
+bitbucket, but since this is not the bottleneck, I have chosen to leave then synchronous.
 
 ## What I'd like to improve on...
 1. Performance<br/>
@@ -48,6 +52,10 @@ requests required to build the overview grows at twice the rate. For example, 1 
 of 10 repositories, but then 20 additional requests must be made to calculate the total fork and watcher counts for
 those 10 repositories. This, in combination with bitbucket's rate-limited API, could prove troublesome for either real
 world use of this application or organizations with many repositories.
+<br/><br/>
+I have parallelized the deep linked calls to bitbucket to improve end user performance, but this unfortunately means 
+that the rate limit is also approached more quickly. Setting the thread pool size to 3 seems to be the best but may
+need to be tweaked if the repository count for an organization is larger than the provided examples.
 
 2. Exception handling<br/>
 In the current implementation, if a downstream exception is encountered, no data will be returned to the user. This
