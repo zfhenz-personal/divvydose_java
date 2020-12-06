@@ -23,7 +23,7 @@ public class RepositoryController {
 		this.bitBucketService = bitBucketService;
 	}
 
-	@GetMapping("/info/{name}")
+	@GetMapping("/overview/{name}")
 	public RepositorySummary getRepositoryInfo(@PathVariable String name) {
 		RepositorySummary gitHubSummary = gitHubService.getRepositorySummary(name);
 		RepositorySummary bitbucketSummary = bitBucketService.getRepositorySummary(name);

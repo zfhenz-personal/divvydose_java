@@ -70,6 +70,7 @@ public class RepositorySummary {
 
 	public RepositorySummary combine(final RepositorySummary alternateSummary) {
 		this.setPublicRepoCount(getSafeLong(this.getPublicRepoCount()) + getSafeLong(alternateSummary.getPublicRepoCount()));
+		this.setForkRepoCount(getSafeLong(this.getForkRepoCount()) + getSafeLong(alternateSummary.getForkRepoCount()));
 		this.setWatcherCount(getSafeLong(this.getWatcherCount()) + getSafeLong(alternateSummary.getWatcherCount()));
 		this.setLanguageCount(getSafeLong(this.getLanguageCount()) + getSafeLong(alternateSummary.getLanguageCount()));
 		this.setTopicCount(getSafeLong(this.getTopicCount()) + getSafeLong(alternateSummary.getTopicCount()));
