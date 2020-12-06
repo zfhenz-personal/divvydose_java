@@ -8,9 +8,6 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-/**
- * taken from https://docs.github.com/en/free-pro-team@latest/rest/reference/repos
- */
 public class Repository {
 	private String id;
 	@JsonAlias("watchers_count")

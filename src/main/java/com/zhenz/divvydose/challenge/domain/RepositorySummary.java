@@ -3,6 +3,7 @@ package com.zhenz.divvydose.challenge.domain;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Page;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Repository;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
+@NoArgsConstructor
 public class RepositorySummary {
 	private Long publicRepoCount;
 	private Long forkRepoCount;
@@ -72,10 +74,10 @@ public class RepositorySummary {
 		this.setPublicRepoCount(getSafeLong(this.getPublicRepoCount()) + getSafeLong(alternateSummary.getPublicRepoCount()));
 		this.setForkRepoCount(getSafeLong(this.getForkRepoCount()) + getSafeLong(alternateSummary.getForkRepoCount()));
 		this.setWatcherCount(getSafeLong(this.getWatcherCount()) + getSafeLong(alternateSummary.getWatcherCount()));
-		this.setLanguageCount(getSafeLong(this.getLanguageCount()) + getSafeLong(alternateSummary.getLanguageCount()));
-		this.setTopicCount(getSafeLong(this.getTopicCount()) + getSafeLong(alternateSummary.getTopicCount()));
 		this.getLanguages().addAll(alternateSummary.getLanguages());
 		this.getTopics().addAll(alternateSummary.getTopics());
+		this.setLanguageCount((long) this.getLanguages().size());
+		this.setTopicCount((long) this.getTopics().size());
 
 		return this;
 	}
