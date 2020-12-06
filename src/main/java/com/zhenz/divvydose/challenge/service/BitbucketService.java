@@ -5,6 +5,7 @@ import com.zhenz.divvydose.challenge.domain.RepositorySummary;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Page;
 import com.zhenz.divvydose.challenge.domain.bitbucket.Repository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -21,6 +22,7 @@ public class BitbucketService {
 
 	private final RestClient restClient;
 
+	@Autowired
 	public BitbucketService(final RestClient restClient) {
 		this.restClient = restClient;
 	}
