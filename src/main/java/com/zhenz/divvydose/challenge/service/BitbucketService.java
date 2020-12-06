@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Service
 public class BitbucketService {
 
@@ -19,25 +21,36 @@ public class BitbucketService {
 	}
 
 	public RepositorySummary getRepositorySummary(final String name) {
-		// todo handle paging where repo count > 10
-		Page<Repository> repositoryPage = getRepositoryPage(name);
+		int page = 1;
+		Page<Repository> repositoryPage = getRepositoryPage(name, page);
 		RepositorySummary repositorySummary = new RepositorySummary(repositoryPage);
 		repositorySummary.setWatcherCount(0L);
+		repositorySummary.setForkRepoCount(0L);
 
-		// todo make async
-		for (Repository repository : repositoryPage.getValues()) {
-			Page watchers = restClient.get(repository.getLinks().getWatchers().getHref(), new ParameterizedTypeReference<>() {});
+		List<Repository> allRepositories = repositoryPage.getValues();
+		while (repositoryPage.getSize() > 10) {
+			page++;
+			repositoryPage = getRepositoryPage(name, page);
+			allRepositories.addAll(repositoryPage.getValues());
+		}
+
+		for (Repository repository : allRepositories) {
+			Page<?> watchers = restClient.get(repository.getLinks().getWatchers().getHref(), new ParameterizedTypeReference<>() {});
 			repositorySummary.setWatcherCount(repositorySummary.getWatcherCount() + watchers.getSize());
+
+			Page<?> forks = restClient.get(repository.getLinks().getForks().getHref(), new ParameterizedTypeReference<>() {});
+			repositorySummary.setForkRepoCount(repositorySummary.getWatcherCount() + forks.getSize());
 		}
 
 		return repositorySummary;
 	}
 
-	private Page<Repository> getRepositoryPage(final String name) {
+	private Page<Repository> getRepositoryPage(final String name, final int page) {
 		final UriComponents uriComponents = UriComponentsBuilder.newInstance()
 				.scheme("https")
 				.host("api.bitbucket.org")
 				.path("/2.0/repositories/{name}")
+				.queryParam("page", page)
 				.buildAndExpand(name);
 
 		return restClient.get(uriComponents.toUriString(), new ParameterizedTypeReference<>() {});

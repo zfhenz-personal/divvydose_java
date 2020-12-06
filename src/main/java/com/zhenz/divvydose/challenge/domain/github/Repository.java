@@ -15,6 +15,8 @@ public class Repository {
 	private String id;
 	@JsonAlias("watchers_count")
 	private Integer watchersCount;
+	@JsonAlias("forks_count")
+	private Integer forksCount;
 	private String language;
 	private List<String> topics;
 }

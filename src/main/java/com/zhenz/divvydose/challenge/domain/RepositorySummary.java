@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 @Data
 public class RepositorySummary {
 	private Long publicRepoCount;
+	private Long forkRepoCount;
 	private Long watcherCount;
 	private Long languageCount;
 	private Set<String> languages;
@@ -19,8 +20,12 @@ public class RepositorySummary {
 	private Set<String> topics;
 
 	public RepositorySummary(final List<com.zhenz.divvydose.challenge.domain.github.Repository> gitHubRepositories) {
-		//todo separate by original repos vs forked repos?
 		this.setPublicRepoCount((long) gitHubRepositories.size());
+
+		this.setForkRepoCount((long) gitHubRepositories
+				.stream()
+				.mapToInt(com.zhenz.divvydose.challenge.domain.github.Repository::getForksCount)
+				.sum());
 
 		this.setWatcherCount((long) gitHubRepositories
 				.stream()
@@ -64,13 +69,17 @@ public class RepositorySummary {
 	}
 
 	public RepositorySummary combine(final RepositorySummary alternateSummary) {
-		this.setPublicRepoCount(this.getPublicRepoCount() + alternateSummary.getPublicRepoCount());
-		this.setWatcherCount(this.getWatcherCount() + alternateSummary.getWatcherCount());
-		this.setLanguageCount(this.getLanguageCount() + alternateSummary.getLanguageCount());
-		this.setTopicCount(this.getTopicCount() + alternateSummary.getTopicCount());
+		this.setPublicRepoCount(getSafeLong(this.getPublicRepoCount()) + getSafeLong(alternateSummary.getPublicRepoCount()));
+		this.setWatcherCount(getSafeLong(this.getWatcherCount()) + getSafeLong(alternateSummary.getWatcherCount()));
+		this.setLanguageCount(getSafeLong(this.getLanguageCount()) + getSafeLong(alternateSummary.getLanguageCount()));
+		this.setTopicCount(getSafeLong(this.getTopicCount()) + getSafeLong(alternateSummary.getTopicCount()));
 		this.getLanguages().addAll(alternateSummary.getLanguages());
 		this.getTopics().addAll(alternateSummary.getTopics());
 
 		return this;
+	}
+
+	private Long getSafeLong(Long input) {
+		return input == null ? 0 : input;
 	}
 }

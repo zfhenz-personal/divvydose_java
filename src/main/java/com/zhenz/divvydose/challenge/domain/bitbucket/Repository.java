@@ -11,6 +11,7 @@ public class Repository {
 	@Data
 	public static class Links {
 		private Link watchers;
+		private Link forks;
 
 		@Data
 		public static class Link {
